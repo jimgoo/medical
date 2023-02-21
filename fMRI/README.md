@@ -26,5 +26,7 @@ Train the prior model (see the file for all the command line arguments):
 python train_prior.py
 ```
 
+## Results
+
 There are some training runs on wandb: https://wandb.ai/jimgoo/laion-fmri
 

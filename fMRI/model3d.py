@@ -146,18 +146,27 @@ class NewVoxel3dConvEncoder(nn.Module):
             self.proj = nn.Linear(attention_width * dims[0] * dims[1] * dims[2], out_dim)
             # self.proj = nn.LazyLinear(out_dim)
 
+        # original BrainNetwork had pretty big dropout on inputs
+        self.input_dropout = nn.Dropout3d(p=0.5)
+
     def _get_conv_layer(self, c_in, c_out, kernel_size, stride, padding, dilation, act_layer):
         return nn.Sequential(
             nn.Conv3d(c_in, c_out, kernel_size, stride=stride, padding=padding, dilation=dilation),
             nn.BatchNorm3d(c_out),
             act_layer(),
+            # nn.Dropout3d(p=0.4),
             nn.Dropout3d(p=0.2),
             # nn.MaxPool3d(kernel_size=2, stride=2)
         )
 
     def forward(self, x: torch.Tensor):
         assert x.ndim == 4, f"Input must be 4D. Got {x.ndim}D"
+
+        # add singleton channel dimension
         x = x.unsqueeze(1)
+
+        # lots of dropout on inputs
+        x = self.input_dropout(x)
 
         for block in self.conv_blocks:
             x = block(x)
